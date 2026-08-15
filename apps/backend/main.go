@@ -29,5 +29,10 @@ func main() {
 		})
 	})
 
+	e.GET("/name/:name", func(c echo.Context) error {
+		name := c.Param("name")
+		return c.JSON(http.StatusOK, "Hello " + name)
+	})
+
 	e.Logger.Fatal(e.Start(":8080"))
 }
