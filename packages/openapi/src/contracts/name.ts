@@ -1,6 +1,6 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { ZNameResponse } from "@go-backend-boilerplate/zod";
+import { ZNameResponse } from "@go_backend_boilerplate/zod";
 
 const c = initContract();
 

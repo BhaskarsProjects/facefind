@@ -1,5 +1,5 @@
 {
-  "name": "@go-backend-boilerplate/openapi",
+  "name": "@go_backend_boilerplate/openapi",
   "version": "1.0.0",
   "description": "Generates OpenAPI documentation",
   "type": "module",
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@anatine/zod-openapi": "^2.2.7",
-    "@go-backend-boilerplate/zod": "workspace:*",
+    "@go_backend_boilerplate/zod": "workspace:*",
     "@ts-rest/core": "^3.52.1",
     "@ts-rest/open-api": "^3.52.1",
     "ts-pattern": "^5.7.0",

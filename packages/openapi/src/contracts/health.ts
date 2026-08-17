@@ -1,5 +1,5 @@
 import { initContract } from "@ts-rest/core";
-import { ZHealthResponse } from "@go-backend-boilerplate/zod";
+import { ZHealthResponse } from "@go_backend_boilerplate/zod";
 
 const c = initContract();
 

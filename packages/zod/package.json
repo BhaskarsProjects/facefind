@@ -1,5 +1,5 @@
 {
-  "name": "@go-backend-boilerplate/zod",
+  "name": "@go_backend_boilerplate/zod",
   "version": "1.0.0",
   "description": "Package which exports all Zod schemas and types",
   "type": "module",
