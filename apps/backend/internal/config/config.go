@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strings"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	_ "github.com/joho/godotenv/autoload"
@@ -34,16 +35,17 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	Host            string `koanf:"host" validate:"required"`
-	Port            int    `koanf:"port" validate:"required"`
-	User            string `koanf:"user" validate:"required"`
-	Password        string `koanf:"password"`
-	Name            string `koanf:"name" validate:"required"`
-	SSLMode         string `koanf:"ssl_mode" validate:"required"`
-	MaxOpenConns    int    `koanf:"max_open_conns" validate:"required"`
-	MaxIdleConns    int    `koanf:"max_idle_conns" validate:"required"`
-	ConnMaxLifetime int    `koanf:"conn_max_lifetime" validate:"required"`
-	ConnMaxIdleTime int    `koanf:"conn_max_idle_time" validate:"required"`
+    Host            string        `koanf:"host" validate:"required"`
+    Port            int           `koanf:"port" validate:"required"`
+    User            string        `koanf:"user" validate:"required"`
+    Password        string        `koanf:"password"`
+    Name            string        `koanf:"name" validate:"required"`
+    SSLMode         string        `koanf:"ssl_mode" validate:"required"`
+
+    MinConns        int32         `koanf:"min_conns" validate:"required"`
+    MaxConns        int32         `koanf:"max_conns" validate:"required"`
+    ConnMaxLifetime time.Duration `koanf:"conn_max_lifetime" validate:"required"`
+    ConnMaxIdleTime time.Duration `koanf:"conn_max_idle_time" validate:"required"`
 }
 
 type RedisConfig struct {
