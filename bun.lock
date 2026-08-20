@@ -3,18 +3,18 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "go_backend_boilerplate",
+      "name": "facefind",
       "devDependencies": {
         "turbo": "^2.10.10",
         "typescript": "^7.0.2",
       },
     },
     "packages/openapi": {
-      "name": "@go_backend_boilerplate/openapi",
+      "name": "@facefind/openapi",
       "version": "1.0.0",
       "dependencies": {
         "@anatine/zod-openapi": "^2.2.7",
-        "@go_backend_boilerplate/zod": "workspace:*",
+        "@facefind/zod": "workspace:*",
         "@ts-rest/core": "^3.52.1",
         "@ts-rest/open-api": "^3.52.1",
         "ts-pattern": "^5.7.0",
@@ -30,7 +30,7 @@
       },
     },
     "packages/zod": {
-      "name": "@go_backend_boilerplate/zod",
+      "name": "@facefind/zod",
       "version": "1.0.0",
       "dependencies": {
         "@anatine/zod-openapi": "^2.2.7",
@@ -237,13 +237,9 @@
       "sha512-5ebpxr3nWMzrL/rnUI755Jkuee0bHL/Gq0WTF9lvcpv73wAp5eu8MfBUgWK9bhWvZjj7yX8etf/8tI8Ney695g==",
     ],
 
-    "@go_backend_boilerplate/openapi": [
-      "@go_backend_boilerplate/openapi@workspace:packages/openapi",
-    ],
+    "@facefind/openapi": ["@facefind/openapi@workspace:packages/openapi"],
 
-    "@go_backend_boilerplate/zod": [
-      "@go_backend_boilerplate/zod@workspace:packages/zod",
-    ],
+    "@facefind/zod": ["@facefind/zod@workspace:packages/zod"],
 
     "@nodelib/fs.scandir": [
       "@nodelib/fs.scandir@2.1.5",
@@ -1194,14 +1190,14 @@
       "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==",
     ],
 
-    "@go_backend_boilerplate/openapi/typescript": [
+    "@facefind/openapi/typescript": [
       "typescript@5.9.3",
       "",
       { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } },
       "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==",
     ],
 
-    "@go_backend_boilerplate/zod/typescript": [
+    "@facefind/zod/typescript": [
       "typescript@5.9.3",
       "",
       { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } },

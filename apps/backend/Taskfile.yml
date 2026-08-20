@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://taskfile.dev/schema.json
 
-version: '3'
+version: "3"
 
 vars:
 
@@ -8,20 +8,20 @@ tasks:
   help:
     desc: print this help message
     cmds:
-    - task --list-all
+      - task --list-all
     silent: true
 
   run:
-    desc: run the cmd/go_backend_boilerplate application
+    desc: run the cmd/facefind application
     cmds:
-    - go run ./cmd/go_backend_boilerplate
+      - go run ./cmd/facefind
 
   tidy:
     desc: format all .go files, and tidy and vendor module dependencies
     cmds:
-    - echo 'Formatting .go files'
-    - go fmt ./...
-    - echo 'Tidying module dependencies'
-    - go mod tidy
-    - echo 'Verifying dependencies...'
-    - go mod verify
+      - echo 'Formatting .go files'
+      - go fmt ./...
+      - echo 'Tidying module dependencies'
+      - go mod tidy
+      - echo 'Verifying dependencies...'
+      - go mod verify
