@@ -19,11 +19,18 @@ type Config struct {
 	Auth        AuthConfig        `koanf:"auth" validate:"required"`
 	Redis       RedisConfig       `koanf:"redis" validate:"required"`
 	Integration IntegrationConfig `koanf:"integration" validate:"required"`
+	R2          R2Config          `koanf:"r2" validate:"required"`
+	AIWorker    AIWorkerConfig    `koanf:"ai_worker" validate:"required"`
 	// Observability *ObservabilityConfig `koanf:"observability"`
 }
 
 type AppConfig struct {
 	Env string `koanf:"env" validate:"required"`
+}
+
+type AIWorkerConfig struct {
+	BaseURL string `koanf:"base_url" validate:"required"`
+	Token   string `koanf:"token" validate:"required"`
 }
 
 type ServerConfig struct {
@@ -58,11 +65,20 @@ type IntegrationConfig struct {
 
 // Authenticator wraps the go-auth0 authentication client.
 type AuthConfig struct {
-	Domain        string `koanf:"domain" validate:"required"`
-	ClientID      string `koanf:"client_id" validate:"required"`
-	ClientSecret  string `koanf:"client_secret" validate:"required"`
-	CallbackURL   string `koanf:"callback_url" validate:"required"`
-	SessionSecret string `koanf:"session_secret" validate:"required"`
+	Audience           string `koanf:"audience" validate:"required"`
+	Domain             string `koanf:"domain" validate:"required"`
+	ClientID           string `koanf:"client_id" validate:"required"`
+	ClientSecret       string `koanf:"client_secret" validate:"required"`
+	CallbackURL        string `koanf:"callback_url" validate:"required"`
+	SessionSecret      string `koanf:"session_secret" validate:"required"`
+	DatabaseConnection string `koanf:"database_connection" validate:"required"`
+}
+
+type R2Config struct {
+	AccountID       string `koanf:"account_id" validate:"required"`
+	AccessKeyID     string `koanf:"access_key_id" validate:"required"`
+	SecretAccessKey string `koanf:"secret_access_key" validate:"required"`
+	Bucket          string `koanf:"bucket" validate:"required"`
 }
 
 func LoadConfig() (*Config, error) {
@@ -83,6 +99,24 @@ func LoadConfig() (*Config, error) {
 	err = k.Unmarshal("", mainConfig)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("could not unmarshal main config")
+	}
+
+	// Convert comma-separated CORS origins into a slice.
+	if len(mainConfig.Server.CORSAllowedOrigins) > 0 {
+		var origins []string
+
+		for _, value := range mainConfig.Server.CORSAllowedOrigins {
+			origins = append(
+				origins,
+				strings.Split(value, ",")...,
+			)
+		}
+
+		for i := range origins {
+			origins[i] = strings.TrimSpace(origins[i])
+		}
+
+		mainConfig.Server.CORSAllowedOrigins = origins
 	}
 
 	validate := validator.New()

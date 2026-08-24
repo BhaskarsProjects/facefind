@@ -3,9 +3,11 @@ package handler
 import (
 	"net/http"
 
+	"github.com/bhaskarvb28/facefind/internal/model/auth"
 	"github.com/bhaskarvb28/facefind/internal/server"
 	"github.com/bhaskarvb28/facefind/internal/service"
 	"github.com/bhaskarvb28/facefind/internal/utils"
+	"github.com/labstack/echo/v4"
 )
 
 type AuthHandler struct {
@@ -13,101 +15,170 @@ type AuthHandler struct {
 	authService *service.AuthService
 }
 
-func NewAuthHandler(s *server.Server, authService *service.AuthService) *AuthHandler {
+func NewAuthHandler(
+	s *server.Server,
+	authService *service.AuthService,
+) *AuthHandler {
 	return &AuthHandler{
-		Handler: NewHandler(s),
+		Handler:     NewHandler(s),
 		authService: authService,
 	}
 }
 
-func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) Signup(c echo.Context) error {
+	return Handle(
+		h.Handler,
+		func(c echo.Context, payload *auth.SignupPayload) (*auth.SignupResponse, error) {
+
+			response, err := h.authService.Signup(
+				c.Request().Context(),
+				payload.Email,
+				payload.Password,
+			)
+			if err != nil {
+				return nil, err
+			}
+
+			return response, nil
+		},
+		http.StatusCreated,
+		&auth.SignupPayload{},
+	)(c)
+}
+
+// 1. Get email/password
+// 2. Authenticate user through authService
+// 3. Create server-side session
+// 4. Set session cookie
+// 5. Return user
+
+func (h *AuthHandler) Login(c echo.Context) error {
+	return Handle(
+		h.Handler,
+		func(
+			c echo.Context,
+			payload *auth.LoginPayload,
+		) (*auth.AuthenticatedUser, error) {
+
+			response, err := h.authService.Login(
+				c.Request().Context(),
+				payload.Email,
+				payload.Password,
+			)
+			if err != nil {
+				return nil, err
+			}
+
+			return response, nil
+		},
+		http.StatusOK,
+		&auth.LoginPayload{},
+	)(c)
+}
+
+func (h *AuthHandler) OAuthLogin(c echo.Context) error {
 	state, err := utils.GenerateState()
 	if err != nil {
-		http.Error(w, "failed to generate state", http.StatusInternalServerError)
-		return
+		return echo.NewHTTPError(
+			http.StatusInternalServerError,
+			"failed to generate state",
+		)
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "oauth_state",
-		Value:    state,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   false, // false locally if you're using plain HTTP
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   300, // 5 minutes
-	})
+	cookie := new(http.Cookie)
+	cookie.Name = "oauth_state"
+	cookie.Value = state
+	cookie.Path = "/"
+	cookie.HttpOnly = true
+	cookie.Secure = false // false locally when using HTTP
+	cookie.SameSite = http.SameSiteLaxMode
+	cookie.MaxAge = 300
+
+	c.SetCookie(cookie)
 
 	authURL := h.authService.AuthorizationURL(state)
 
-	http.Redirect(w, r, authURL, http.StatusFound)
+	return c.Redirect(http.StatusFound, authURL)
 }
 
-func (h *AuthHandler) Callback(w http.ResponseWriter, r *http.Request) {
-	code := r.URL.Query().Get("code")
-	state := r.URL.Query().Get("state")
+func (h *AuthHandler) Callback(c echo.Context) error {
+	code := c.QueryParam("code")
+	state := c.QueryParam("state")
 
 	if code == "" {
-		http.Error(w, "missing authorization code", http.StatusBadRequest)
-		return
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			"missing authorization code",
+		)
 	}
 
 	if state == "" {
-		http.Error(w, "missing state", http.StatusBadRequest)
-		return
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			"missing state",
+		)
 	}
 
-	stateCookie, err := r.Cookie("oauth_state")
+	stateCookie, err := c.Cookie("oauth_state")
 	if err != nil {
-		http.Error(w, "missing oauth state", http.StatusBadRequest)
-		return
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			"missing oauth state",
+		)
 	}
 
 	if state != stateCookie.Value {
-		http.Error(w, "invalid oauth state", http.StatusBadRequest)
-		return
+		return echo.NewHTTPError(
+			http.StatusBadRequest,
+			"invalid oauth state",
+		)
 	}
 
-	tokenSet, err := h.authService.ExchangeCode(r.Context(), code)
+	tokenSet, err := h.authService.ExchangeCode(
+		c.Request().Context(),
+		code,
+	)
 	if err != nil {
-		http.Error(w, "failed to authenticate", http.StatusUnauthorized)
-		return
+		return echo.NewHTTPError(
+			http.StatusUnauthorized,
+			"failed to authenticate",
+		)
 	}
 
 	// Delete OAuth state cookie.
-	http.SetCookie(w, &http.Cookie{
+	c.SetCookie(&http.Cookie{
 		Name:     "oauth_state",
 		Value:    "",
 		Path:     "/",
 		MaxAge:   -1,
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	// Store tokens in cookies.
-	http.SetCookie(w, &http.Cookie{
+	// Store access token.
+	c.SetCookie(&http.Cookie{
 		Name:     "access_token",
 		Value:    tokenSet.AccessToken,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	http.SetCookie(w, &http.Cookie{
+	// Store ID token.
+	c.SetCookie(&http.Cookie{
 		Name:     "id_token",
 		Value:    tokenSet.IDToken,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
 	})
 
 	// Redirect to frontend.
-	http.Redirect(
-		w,
-		r,
-		"http://localhost:3000",
+	return c.Redirect(
 		http.StatusFound,
+		"http://localhost:3000",
 	)
 }

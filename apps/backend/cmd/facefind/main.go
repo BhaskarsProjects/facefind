@@ -1,10 +1,12 @@
 package main
 
 import (
-	"net/http"
+	"fmt"
 
 	"github.com/bhaskarvb28/facefind/internal/config"
 	"github.com/bhaskarvb28/facefind/internal/handler"
+	"github.com/bhaskarvb28/facefind/internal/repository"
+	"github.com/bhaskarvb28/facefind/internal/router"
 	"github.com/bhaskarvb28/facefind/internal/server"
 	"github.com/bhaskarvb28/facefind/internal/service"
 )
@@ -20,21 +22,22 @@ func main() {
 		panic(err)
 	}
 
-	services, err := service.NewServices(s)
+	repos := repository.NewRepositories(s)
+	services, err := service.NewServices(s, repos)
 	if err != nil {
 		panic(err)
 	}
 
 	handlers := handler.NewHandlers(s, services)
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /auth/login", handlers.Auth.Login)
-	mux.HandleFunc("GET /auth/callback", handlers.Auth.Callback)
+	httpRouter, err := router.NewRouter(s, handlers, services)
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	s.SetupHTTPServer(mux)
+	s.SetupHTTPServer(httpRouter)
 
 	if err := s.Start(); err != nil {
 		panic(err)
 	}
-
 }
