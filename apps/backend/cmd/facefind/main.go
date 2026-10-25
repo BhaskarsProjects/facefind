@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+	fmt.Println("Starting Application")
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		panic("failed to load config: " + err.Error())

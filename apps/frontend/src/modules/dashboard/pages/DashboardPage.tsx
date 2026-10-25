@@ -25,7 +25,7 @@ export default function DashboardPage() {
       <section>
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            My Library
+            code origin
           </h1>
 
           <p className="mt-1 text-sm text-muted-foreground">
